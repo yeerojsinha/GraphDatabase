@@ -1,0 +1,51 @@
+﻿diseaseId,description
+E113211,Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema right eye
+E113212,Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema left eye
+E113213,Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema bilateral
+E113219,Type 2 diabetes mellitus with mild nonproliferative diabetic retinopathy with macular edema unspecified eye
+E11630,Type 2 diabetes mellitus with periodontal disease
+E11638,Type 2 diabetes mellitus with other oral complications
+E08630,Diabetes mellitus due to underlying condition with periodontal disease
+E09630,Drug or chemical induced diabetes mellitus with periodontal disease
+E10630,Type 1 diabetes mellitus with periodontal disease
+E11630,Type 2 diabetes mellitus with periodontal disease
+E13630,Other specified diabetes with periodonal disease
+H159,Unspecified disorder of sclera
+H16001,Unspecified corneal ulcer right eye
+H16002,unspecified corneal ulcer left eye
+H16003,Unspecified corneal ulcer bilateral
+H16011,Unspecified corneal ulcer unspecified eye
+H16012,Central corneal ulcer right eye
+H16013,central corneal ulcer left eye
+H16019,central corneal ulcer bilateral
+H16021,central corneal ulcer unspecified eye
+H16022,ring corneal ulcer right eye
+H16023,ring corneal ulcer left eye
+H16029,Ring corneal ulcer bilateral
+H16031,Ring corneal ulcer unspecified eye
+H16032,Corneal ulcer with hypopyon right eye
+H16033,Corneal ulcer with hypopyon left eye
+H16039,corneal ulcer with hypopyon bilateral
+H16041,corneal ulcer with hypopyon unspecified
+K000,Anodontia
+K001,Supernumerary teeth
+K002,Abnormalities of size and form of teeth
+K003,Mottled teeth
+K004,Disturbance in tooth formation
+K005,Hereditary disturbance in tooth structure
+K006,Disturbance in tooth eruption
+K007,Teething syndrome
+K008,Other disorders of tooth development
+K009,Disorder of tooth development unspecified
+K010,embedded teeth
+K011,Impacted teeth
+K023,Arrested dental carries
+K011,Dental caries on pit and fissure surface limited to enamel
+K023,Dental caries on pit and fissure surface penetrating into dentin
+K0251,Dental caries on pit and fissure surface penetrating into pulp
+K0252,Dental caries on smooth surface limited to enamel
+M62830,Muscle spasm of back
+M62831,Muscle spasm of calf
+M62838,Other muscle spasm
+M6284,Sarcopenia
+M6289,Other specified disorders of muscle
