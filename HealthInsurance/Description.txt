@@ -1,1 +1,1 @@
-This file contains all the csv files and gsql queries files which are used in this HealthInsurance Graph which is created in TigerGraph 
+This file contains all the csv files and gsql queries files which are used in this HealthInsurance Graph which is created in TigerGraph , also I have included some of the pictures from the schema section, mapping section, load data, and explore sections
