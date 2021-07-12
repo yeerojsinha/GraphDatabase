@@ -1,0 +1,11 @@
+CREATE QUERY query2(VERTEX<Patient> p) FOR GRAPH ThePandemic { 
+ /* It shows all the connections of a patient */
+  ListAccum<EDGE> @@edgeList;
+	seed = {p};
+	
+	S1 = SELECT s
+	       FROM seed:s -(:e)->:t
+	       ACCUM @@edgeList += e;
+	
+  PRINT  @@edgeList; 
+}

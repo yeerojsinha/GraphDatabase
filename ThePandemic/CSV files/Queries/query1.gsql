@@ -1,0 +1,24 @@
+CREATE QUERY querry1() FOR GRAPH ThePandemic { 
+  /* If a person travel having covid symptoms how many people he will infect */ 
+  SumAccum<INT> @@total;
+  FLOAT ans;
+  FLOAT it;
+  Float totalPatient;
+    patient={Patient.*};
+  
+
+  patient=SELECT s FROM patient:s WHERE (s.confirmed_date!=to_datetime(""));
+  PRINT patient.size() AS TotalPatients;
+  totalPatient=patient.size();
+ 
+  patient=SELECT s FROM patient:s -(PATIENT_TRAVELLED:e)-> TravelEvent: p
+  WHERE p.visited_date<s.confirmed_date  AND              
+  p.visited_date>s.symptom_onset_date ;
+  PRINT patient.size() AS Patients_Who_Travlled_With_Symptoms;
+  it=patient.size();
+  patient=SELECT s FROM patient:s -((reverse_INFECTED_BY):e)->Patient
+  ACCUM @@total+=1;
+  PRINT @@total;
+  ans=(@@total/totalPatient)*100;
+  PRINT to_string(ans)+"%" AS Spread_Percentage;
+  }
