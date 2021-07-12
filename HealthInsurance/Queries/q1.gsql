@@ -1,0 +1,11 @@
+CREATE QUERY q1( String benefitName, String ICDCode) FOR GRAPH HealthInsurance { 
+  /* Get Details of the members who have a particular benefit and have suffered from a particular disease */ 
+  
+  allMembers={MemberData.*};
+  
+  memberWithServiceType = SELECT s FROM allMembers:s -(HAS_BENEFIT)-> Benefits:pats WHERE pats.typeOfBenefit==benefitName;
+ 
+  memberWithDiseaseType = SELECT s FROM memberWithServiceType:s -(HAS_DISEASE)-> Disease:pats WHERE pats.diseaseId==ICDCode;
+  PRINT memberWithDiseaseType.size();
+  PRINT memberWithDiseaseType;
+}

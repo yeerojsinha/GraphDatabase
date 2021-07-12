@@ -1,0 +1,16 @@
+CREATE QUERY q3(STRING e1,STRING e2) FOR GRAPH HealthInsurance { 
+  /* 
+  Using the dates as constraints and getting the payments made to the providers between two given dates  
+  */ 
+  SumAccum<uint> @individualPayment;
+  members = {MemberData.*};
+  benefits = {Benefits.*};
+  diseases = {Disease.*};
+  providers = {Provider.*};
+  providersList=SELECT t from members:s-(PROVIDES_TO:e)-:t
+                WHERE to_datetime(e.date) BETWEEN to_datetime(e1) AND to_datetime(e2)
+
+                ACCUM t.@individualPayment +=(e.charges);
+              
+  PRINT providersList;
+ }

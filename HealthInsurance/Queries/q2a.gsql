@@ -1,0 +1,24 @@
+CREATE QUERY q2a(/* Parameters here */) FOR GRAPH HealthInsurance { 
+  /* 
+  Same as query q2 but here we have used Order by and Limit instead of Heap 
+  */ 
+ 
+  TYPEDEF tuple<STRING providerName, INT moneyPaid> providers;
+  SumAccum<uint> @individualPayment;
+  SumAccum<uint> @@overallPayment;
+  allmembers={MemberData.*};
+  allproviders={Provider.*};
+  providersList=SELECT t from allmembers:s-(PROVIDES_TO:e)-:t
+              ACCUM t.@individualPayment +=(e.charges) ;       
+  
+  providersList=SELECT t from providersList:t
+              ACCUM @@overallPayment+=(t.@individualPayment);
+ 
+  providersList1 = SELECT t from providersList:t
+                ORDER BY t.@individualPayment DESC
+                LIMIT 3;
+ 
+  PRINT @@overallPayment;
+  
+  PRINT providersList1;
+}

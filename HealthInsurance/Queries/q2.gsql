@@ -1,0 +1,23 @@
+CREATE QUERY q2(/* Parameters here */) FOR GRAPH HealthInsurance { 
+  /*
+  Get the total payment made to the providers
+  Top 3 highest paid providers
+  And Individual payments made to all the providers
+  */
+  TYPEDEF tuple<STRING providerName, INT moneyPaid> providers;
+  SumAccum<uint> @individualPayment;
+  SumAccum<uint> @@overallPayment;
+  HeapAccum<providers>(3, moneyPaid DESC)@@myHeap;
+  allmembers={MemberData.*};
+  allproviders={Provider.*};
+  providersList=SELECT t from allmembers:s-(PROVIDES_TO:e)-:t
+              ACCUM t.@individualPayment +=(e.charges)
+              POST-ACCUM @@myHeap+=providers((t.name),(t.@individualPayment));
+              
+  
+  providersList=SELECT t from providersList:t
+              ACCUM @@overallPayment+=(t.@individualPayment);
+  PRINT @@overallPayment;
+  PRINT @@myHeap;
+  PRINT providersList;
+}

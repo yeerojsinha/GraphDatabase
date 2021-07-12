@@ -1,0 +1,21 @@
+CREATE QUERY q4(STRING e1,STRING e2) FOR GRAPH HealthInsurance { 
+  /*
+  Query to get the most widespread disease between two given date
+  */
+  TYPEDEF tuple<STRING diseaseid, INT diseasecount> counters;
+  HeapAccum<counters>(1, diseasecount DESC)@@MyHeap;
+  MapAccum<STRING , SumAccum<INT>> @@Maps;
+  SumAccum <INT> @@diseasecounts;
+  members = {MemberData.*};
+  benefits = {Benefits.*};
+  diseases = {Disease.*};
+  providers = {Provider.*};
+  MembersWithDisease=SELECT t from members:s-(PROVIDES_TO:e)-:t
+                WHERE to_datetime(e.date) BETWEEN to_datetime(e1) AND to_datetime(e2)
+                ACCUM @@Maps += (e.diseaseId -> 1);
+  DiseaseList=SELECT t from MembersWithDisease:t-(PROVIDES_TO:e)-:s
+                ACCUM @@MyHeap += counters(e.diseaseId , @@Maps.get(e.diseaseId));
+
+
+  PRINT @@MyHeap;
+}
