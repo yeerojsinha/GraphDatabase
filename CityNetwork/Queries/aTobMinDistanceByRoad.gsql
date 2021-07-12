@@ -1,0 +1,60 @@
+CREATE QUERY aTobMinDistanceRoad (VERTEX source,STRING destinationCityId) FOR GRAPH CityNetwork {
+
+        TYPEDEF TUPLE<FLOAT roadDistance, VERTEX pred> pathTuple;    
+        HeapAccum<pathTuple>(1, roadDistance ASC) @minPath;
+        ListAccum<VERTEX> @path;                 
+        SetAccum<EDGE> @@edgeSet;               
+        OrAccum @visited;
+        STRING sourceName;
+        INT iter;
+        BOOL negativeCycle;
+        total = {source};                       
+        start = {source};
+
+              
+
+        start = SELECT s
+                FROM start:s
+                ACCUM s.@minPath += pathTuple(0, s),
+                      s.@visited = TRUE,
+                      s.@path += s;
+        WHILE start.size() > 0 DO
+                start = SELECT t
+                        FROM start:s -((viaRoad):e)-> :t
+                        WHERE NOT t.@visited
+                        ACCUM t.@visited = TRUE;
+                total = total UNION start;
+        END;
+        
+
+        iter = total.size() - 1;    
+        WHILE TRUE LIMIT iter DO 
+                tmp = SELECT s
+                      FROM total:s -((viaRoad):e)-> :t
+                      ACCUM 
+                            IF s.@minPath.size()>0 AND s.@minPath.top().roadDistance < GSQL_INT_MAX THEN
+                                t.@minPath += pathTuple(s.@minPath.top().roadDistance + e.roadDistance, s)
+                            END;     
+        END;
+        
+
+        start = {source};
+        tmp = SELECT s
+              FROM total:s
+              WHERE s != source
+              ACCUM s.@visited = FALSE;
+        WHILE start.size() > 0 LIMIT iter DO 
+                start = SELECT t
+                        FROM start:s -((viaRoad):e)-> :t
+                        WHERE NOT t.@visited
+                        ACCUM IF s == t.@minPath.top().pred THEN 
+                                  t.@visited = TRUE,
+                                  t.@path += s.@path,
+                                  t.@path += t
+                              END;
+        END;
+          
+        ans=SELECT v from total:v WHERE v.cityId==destinationCityId;
+        PRINT ans;
+       
+}

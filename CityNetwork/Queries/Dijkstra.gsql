@@ -1,0 +1,88 @@
+CREATE QUERY q3(STRING origin , STRING destination ,  INT budget) FOR GRAPH CityNetwork { 
+	MinAccum<INT> @@minDistance;
+	MaxAccum<INT> @@maxDistance;
+  OrAccum @visited=FALSE;
+	SumAccum<INT> @time = -1;
+  SumAccum<INT>@money = 0;
+  SumAccum<STRING> @path;
+	SetAccum<VERTEX> @@visitedSet;
+	SetAccum<VERTEX> @@unvisitedSet;
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  vertexList = {City.*};
+	currentVertex = SELECT p FROM vertexList:p-(viaRoad:e)->City:t 
+	                  	  WHERE p.cityId == origin 
+	                  	  ACCUM        IF e.roadFare<=budget THEN
+                                      t.@money+=e.roadFare,
+                                     t.@time = e.timeTaken, t.@path = p.cityId + "->", 
+                                     @@maxDistance += e.timeTaken END
+	                  	   POST-ACCUM  p.@visited = TRUE, p.@time = 0, p.@money = 0, 
+                                     @@visitedSet += p;	
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////// 
+  
+	unvisitedSet = SELECT v FROM vertexList:v 
+                                   WHERE v.@visited == FALSE 
+                                   ACCUM @@unvisitedSet += v;  
+	choiceSet = unvisitedSet;
+ 
+	WHILE choiceSet.size() > 0 DO
+ 
+		currentVertex = SELECT v FROM currentVertex:v 
+                                       	ACCUM v.@visited = TRUE, v.@path = v.@path + v.cityId;
+	
+	  
+	  	unvisitedNeighbors = SELECT n FROM currentVertex:v-(viaRoad:e)->City:n
+                                     		ACCUM 
+                                               		IF n.@visited == FALSE THEN
+	                         				IF (n.@time < 0 AND v.@money+e.roadFare<budget) THEN
+	                           					n.@time = e.timeTaken + v.@time,
+	                           					n.@path += v.@path + "->",
+                                      n.@money = e.roadFare+v.@money
+	                        	 			ELSE IF (e.timeTaken + v.@time < n.@time AND v.@money+e.roadFare<budget) THEN
+	                            					n.@time = e.timeTaken + v.@time,
+	                            					n.@path = v.@path + "->",
+                                        n.@money = e.roadFare + v.@money
+	                         				END 
+	                       				END;
+   	
+		
+		currentVertex = SELECT v FROM currentVertex:v POST-ACCUM @@visitedSet += v;
+	
+	 	choiceSet = unvisitedNeighbors UNION unvisitedSet;
+	
+		choiceSet = SELECT n FROM choiceSet:n 
+ 	                                  WHERE n.@visited == FALSE AND n.@time > 0 
+  	                                  ACCUM @@maxDistance += n.@time;
+	  
+		IF @@maxDistance < 0 THEN
+			@@minDistance = 0;
+		ELSE
+			@@minDistance = @@maxDistance;
+		END;
+	 
+	
+		currentVertex = SELECT n FROM choiceSet:n 
+                                     		WHERE n.@visited == FALSE AND n.@time > 0 
+                                     		ACCUM @@minDistance += n.@time 
+                                     		HAVING n.@time == @@minDistance LIMIT 1;
+ 
+	END;
+	
+	FOREACH v IN @@visitedSet DO
+		IF @@unvisitedSet.contains(v) THEN
+	 		@@unvisitedSet.remove(v);
+	 	END;
+	END;
+	
+    
+	shortestTimeResults = unvisitedSet;
+	
+  
+  
+    ans = SELECT s FROM shortestTimeResults:s
+  WHERE s.cityId==destination;
+  
+  PRINT ans;
+  
+  
+}

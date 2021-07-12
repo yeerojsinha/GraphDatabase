@@ -1,0 +1,88 @@
+CREATE QUERY BellmanFordQuery(VERTEX source,STRING destination) FOR GRAPH CityNetwork {
+        /*/////////////////////////////////////////////////
+        Part 1: Declaring variables and accumulators
+        ////////////////////////////////////////////////*/
+        TYPEDEF TUPLE<FLOAT dist, STRING mode ,  VERTEX pred> pathTuple;    
+        HeapAccum<pathTuple>(1, dist ASC) @minPath;
+        ListAccum<STRING> @path;                
+        OrAccum @visited;
+        STRING sourceName;
+        INT iter;
+        BOOL negativeCycle;
+        STRING x1 = "road";
+        STRING x2 = "train";
+        total = {source};                      
+        start = {source};
+        
+        /*////////////////////////////////////////////////
+        Part 2: Assigning source vertex distance as 0 and INT_MAX distance to all other vertex.
+        /////////////////////////////////////////////////*/
+        start = SELECT s
+                FROM start:s
+                ACCUM s.@minPath += pathTuple(0,x1, s),
+                      s.@visited = TRUE,
+                      s.@path += s.cityId;
+                WHILE start.size() > 0 DO
+                start = SELECT t
+                        FROM start:s -((viaTrain|viaRoad):e)-> :t
+                        WHERE NOT t.@visited
+                        ACCUM t.@visited=TRUE;
+                              
+                        total = total UNION start;
+                END;
+        totals=SELECT s FROM total:s WHERE s!=source ACCUM s.@minPath+=pathTuple(GSQL_INT_MAX,x1,s);
+  
+        /*/////////////////////////////////////////////////
+        Part 3: Relaxing the distance N-1 times where N is the number of total nodes.
+        /////////////////////////////////////////////////*/
+  
+        iter = total.size() - 1;    
+        WHILE TRUE LIMIT iter DO 
+                tmp = SELECT s
+                      FROM total:s -((viaTrain|viaRoad):e)-> :t
+                      ACCUM 
+                            IF  e.checker==1 AND  s.@minPath.size()>0 AND s.@minPath.top().dist < GSQL_INT_MAX THEN
+                                t.@minPath += pathTuple((s.@minPath.top().dist + e.roadDistance), x1 , s)
+                            ELSE IF  e.checker==2 AND  s.@minPath.size()>0 AND s.@minPath.top().dist < GSQL_INT_MAX THEN
+                                t.@minPath += pathTuple((s.@minPath.top().dist + e.trainDistance), x2 , s)
+                            END;     
+        END;
+      
+        /*/////////////////////////////////////////////////
+        Part 4: Obtaining the path of vertices.
+        /////////////////////////////////////////////////*/
+  
+        start = {source};
+        tmp = SELECT z
+              FROM total:z
+              WHERE z != source
+              ACCUM z.@visited = FALSE;
+        WHILE start.size() > 0 LIMIT iter DO 
+                start = SELECT t
+                        FROM start:s -((viaTrain|viaRoad):e)-> :t
+                        WHERE NOT t.@visited
+                        ACCUM IF s == t.@minPath.top().pred AND s.@visited==TRUE THEN 
+                                  
+                                  
+                                  IF e.checker==1 AND t.@minPath.top().mode=="road" AND t.@visited==FALSE THEN
+                                  t.@visited = TRUE,
+                                  t.@path+=(s.@path),
+                                  t.@path += t.@minPath.top().mode,
+                                  t.@path += t.cityId
+                                  ELSE IF e.checker==2 AND t.@minPath.top().mode=="train" AND t.@visited==FALSE THEN
+                                  t.@visited = TRUE,
+                                  t.@path+=(s.@path),
+                                  t.@path += t.@minPath.top().mode,
+                                  t.@path += t.cityId
+                                  END
+                                  
+                              END;
+                      
+        END;
+        /*/////////////////////////////////////////////////
+        Part 5: Printing the path of targest vertex
+        /////////////////////////////////////////////////*/
+  
+        ans=SELECT v from total:v WHERE v.cityId==destination;
+        PRINT ans;      
+}
